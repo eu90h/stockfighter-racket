@@ -10,10 +10,9 @@
   (ws-connect url))
 
 (define (read-feed feed)
-    (define in (ws-recv feed #:stream? #t))
-    (unless (eof-object? in)
-      (with-handlers ([exn:fail? (lambda (e) (displayln "error"))])
-        (read-json in))))
+  (define in (ws-recv feed #:stream? #t))
+  (unless (eof-object? in)
+    (read-json in)))
 
 (define (feed-ready? feed)
   (port? (sync/timeout 0 feed)))
