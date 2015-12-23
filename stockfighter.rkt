@@ -8,40 +8,54 @@
 ; (define api-key "541243ab45fcff941ff...")
 ; (new stockfighter% [key api-key])
 ;
-; all requests return a hash representing the json object received from the stockfighter api.
+; all requests return a hash representing the json object received from the stockfighter api
 (define stockfighter%
   (class object% (super-new)
     (init-field key)
-    (field [endpoint "api.stockfighter.io"]
-           [prefix "/ob/api/"])
+    (field [ob-endpoint "api.stockfighter.io"]
+           [gm-endpoint "www.stockfighter.io"]
+           [ob-prefix "/ob/api/"]
+           [gm-prefix "/gm/"]
+           [port 443]
+           [ssl (ssl-make-client-context 'auto)])
     
-    (define/public (set-endpoint new-endpoint) (set! endpoint new-endpoint))
-    (define/public (set-prefix new-prefix) (set! prefix new-prefix))
-    (define/public (get-endpoint) endpoint)
-    (define/public (get-prefix) prefix)
-    (define/public (get-key) key)
-    
-    (define (api-get url)
-      (http-sendrecv endpoint (string-append prefix url)
-                   #:port 443
-                   #:ssl? (ssl-make-client-context 'auto)
-                   #:headers (list (string-append "X-Starfighter-Authorization:" key))))
-    
-    (define (api-post url data)
-      (http-sendrecv endpoint (string-append prefix url)
-                     #:port 443
-                     #:ssl? (ssl-make-client-context 'auto)
-                     #:method 'POST
-                     #:headers (list (string-append "X-Starfighter-Authorization:" key))
-                     #:data data))
+    (define/public (get-gm-endpoint) gm-endpoint)
+    (define/public (get-ob-endpoint) ob-endpoint)
+    (define/public (set-gm-endpoint e) (set! gm-endpoint e))
+    (define/public (set-ob-endpoint e) (set! ob-endpoint e))
 
-    (define (get url)
-      (define-values (status-code headers inp) (api-get url))
-       (port->jsexpr inp))
+    (define/public (get-gm-prefix) gm-prefix)
+    (define/public (get-ob-prefix) ob-prefix)
+    (define/public (set-gm-prefix p) (set! gm-prefix p))
+    (define/public (set-ob-prefix p) (set! ob-prefix p))
     
-    (define (post url data)
-      (define-values (status-code headers inp) (api-post url data))
+    (define/public (get-key) key)
+    (define/public (set-key k) (set! key k))
+    
+    (define/public (get-port) port)
+    (define/public (set-port p) (set! port p))
+    
+    (define/public (ssl-on) (set! ssl (ssl-make-client-context 'auto)))
+    (define/public (ssl-off) (set! ssl #f))
+    
+    (define (http-req method url #:data [data ""] #:gm [gm? #f])
+      (define-values (endpoint prefix headers) (if gm?
+                                                   (values gm-endpoint gm-prefix (list (string-append "Cookie:api_key=" key)))
+                                                   (values ob-endpoint ob-prefix (list (string-append "X-Starfighter-Authorization:" key)))))
+      (define-values (status-code response-headers inp)
+        (http-sendrecv endpoint (string-append ob-prefix url)
+                     #:port port
+                     #:ssl? ssl
+                     #:method method
+                     #:headers headers
+                     #:data data))
       (port->jsexpr inp))
+    
+    (define (get url [gm? #f])
+      (http-req 'GET url #:gm gm?))
+    
+    (define (post url data [gm? #f])
+      (http-req 'POST url #:data data #:gm gm?))
     
     (define/public (is-api-up?)
       (hash-ref (get "heartbeat") 'ok))
@@ -57,6 +71,7 @@
     
     (define/public (get-quote venue symbol)
       (get (string-append "venues/" venue "/stocks/" symbol "/quote")))
+    
     ;assumes order-ids are either strings or numbers
     (define/public (get-order-status venue symbol order-id)
       (get (string-append "venues/" venue "/stocks/" symbol "/orders/" (if (string? order-id) order-id (number->string order-id)))))
@@ -73,6 +88,7 @@
                   order-data)
       (post (string-append "venues/" venue "/stocks/" symbol "/orders")
             (get-output-string order-data)))
+    
     ;assumes order-ids are either strings or numbers
     (define/public (cancel-order venue symbol order-id)
       (post (string-append "venues/" venue "/stocks/" symbol "/orders/" (if (string? order-id) order-id (number->string order-id)) "/cancel") ""))))
