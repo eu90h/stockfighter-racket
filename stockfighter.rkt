@@ -43,7 +43,7 @@
                                                    (values gm-endpoint gm-prefix (list (string-append "Cookie:api_key=" key)))
                                                    (values ob-endpoint ob-prefix (list (string-append "X-Starfighter-Authorization:" key)))))
       (define-values (status-code response-headers inp)
-        (http-sendrecv endpoint (string-append ob-prefix url)
+        (http-sendrecv endpoint (string-append prefix url)
                      #:port port
                      #:ssl? ssl
                      #:method method
