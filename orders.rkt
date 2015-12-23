@@ -25,6 +25,8 @@
   (hash-ref o `originalQty))
 (define (order-price o)
   (hash-ref o `price))
+(define (order-time o)
+  (hash-ref o `ts #f))
 (module+ test
   (require rackunit)
   (define o '#hasheq((price . 3038)
