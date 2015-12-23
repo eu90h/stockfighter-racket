@@ -91,6 +91,22 @@
     
     ;assumes order-ids are either strings or numbers
     (define/public (cancel-order venue symbol order-id)
-      (post (string-append "venues/" venue "/stocks/" symbol "/orders/" (if (string? order-id) order-id (number->string order-id)) "/cancel") ""))))
+      (post (string-append "venues/" venue "/stocks/" symbol "/orders/" (if (string? order-id) order-id (number->string order-id)) "/cancel") ""))
+    
+    (define/public (new-instance name)
+      (post (string-append "levels/" name) "" #t))
 
+    ;assumes ids are either strings or numbers
+    (define/public (restart-instance id)
+      (post (string-append "instances/" (if (string? id) id (number->string id)) "/restart") "" #t))
+
+    (define/public (stop-instance id)
+      (post (string-append "instances/" (if (string? id) id (number->string id)) "/stop") "" #t))
+
+    (define/public (resume-instance id)
+      (post (string-append "instances/" (if (string? id) id (number->string id)) "/resume") "" #t))
+
+    (define/public (instance-info id)
+      (post (string-append "instances/" (if (string? id) id (number->string id))) "" #t))))
+    
 (define port->jsexpr (compose string->jsexpr port->string))
