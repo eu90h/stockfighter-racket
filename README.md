@@ -9,7 +9,7 @@ The `stockfighter.rkt` file contains the main client object. It posts orders, re
 
 Additionally, the files `fills`, `orders`, and `quotes` contain various useful functions for manipulating common data types in Stockfighter.
 
-Finally, `feed.rkt` contains a very simple `json-feed%` object for connecting to websockets. They take a websocket url and a callback which is triggered everytime a message is received.
+Finally, `feed.rkt` contains procedures for handling stockfighter websocket data feeds.
 
 For more info see the source!
 
