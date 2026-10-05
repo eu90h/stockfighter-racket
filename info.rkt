@@ -1,6 +1,7 @@
 #lang info
 (define collection "stockfighter-api")
-(define deps '("base"
+(define deps '("srfi-lite-lib"
+               "base"
                "rackunit-lib"
                "rfc6455"))
 (define build-deps '("scribble-lib" "racket-doc"))
